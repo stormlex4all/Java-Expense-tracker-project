@@ -10,6 +10,8 @@ import javafx.scene.control.TextField;
 import org.example.finalproject.model.Transaction;
 
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
 
 public class TransactionController
 {
@@ -98,42 +100,32 @@ public class TransactionController
     @FXML
     private TextField txtTotalIncome;
 
+    Set<String> types = Set.of("Income", "Expense");
+
+    Set<String> incomeCategories = Set.of("Salary", "Bonus", "Gift", "Other");
+
+    Set<String> expenseCategories = Set.of("Food", "Rent", "Transport", "Shopping", "Bills", "Entertainment", "Other");
+
+    Map<String, Set<String>> categoryMap = Map.of("Income", incomeCategories, "Expense", expenseCategories);
+
     @FXML
     public void initialize()
     {
-        cbType.getItems().addAll("Income", "Expense");
+        cbType.getItems().addAll(types);
         cbCategory.getItems().addAll("Select a type first.");
-        cbFilterType.getItems().addAll("Income", "Expense");
+        cbFilterType.getItems().addAll(types);
         cbFilterCategory.getItems().addAll("Select a filter type first.");
 
         cbType.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
         {
-            switch(newVal)
-            {
-                case "Income":
-                    cbCategory.getItems().setAll("Salary", "Bonus", "Gift", "Other");
-                    cbCategory.setValue("Other");
-                    break;
-                case "Expense":
-                    cbCategory.getItems().setAll("Food", "Rent", "Transport", "Shopping", "Bills", "Entertainment", "Other");
-                    cbCategory.setValue("Other");
-                    break;
-            }
+            cbCategory.getItems().setAll(categoryMap.get(newVal));
+            cbCategory.setValue("Other");
         });
 
         cbFilterType.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
         {
-            switch(newVal)
-            {
-                case "Income":
-                    cbFilterCategory.getItems().setAll("Salary", "Bonus", "Gift", "Other");
-                    cbFilterType.setValue("Other");
-                    break;
-                case "Expense":
-                    cbFilterCategory.getItems().setAll("Food", "Rent", "Transport", "Shopping", "Bills", "Entertainment", "Other");
-                    cbFilterType.setValue("Other");
-                    break;
-            }
+            cbFilterCategory.getItems().setAll(categoryMap.get(newVal));
+            cbFilterType.setValue("Other");
         });
     }
 }
