@@ -9,6 +9,8 @@ import org.example.finalproject.model.Transaction;
 import org.example.finalproject.service.ExpenseTracker;
 
 import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +36,12 @@ public class TransactionController
     private Button btnUpdate;
 
     @FXML
+    private Button btnCreateReport;
+
+    @FXML
+    private Button btnResetReport;
+
+    @FXML
     private ChoiceBox<String> cbCategory;
 
     @FXML
@@ -49,10 +57,10 @@ public class TransactionController
     private ChoiceBox<String> cbMonth;
 
     @FXML
-    private ChoiceBox<String> cbYear;
+    private ChoiceBox<Integer> cbYear;
 
     @FXML
-    private TableColumn<Transaction, Float> colAmount;
+    private TableColumn<Transaction, Double> colAmount;
 
     @FXML
     private TableColumn<Transaction, String> colCategory;
@@ -70,7 +78,7 @@ public class TransactionController
     private TableColumn<Transaction, String> colType;
 
     @FXML
-    private TableColumn<Transaction, Float> colExpenseAmount;
+    private TableColumn<Transaction, Double> colExpenseAmount;
 
     @FXML
     private TableColumn<Transaction, String> colExpenseCategory;
@@ -79,7 +87,10 @@ public class TransactionController
     private DatePicker dpDate;
 
     @FXML
-    private DatePicker dpMonthSelector;
+    private DatePicker dpMonthSelectorEnd;
+
+    @FXML
+    private DatePicker dpMonthSelectorStart;
 
     @FXML
     private TableView<Transaction> tblTransactions;
@@ -108,11 +119,11 @@ public class TransactionController
     @FXML
     private TextField txtTotalIncome;
 
-    Set<Integer> years = Set.copyOf(java.util.stream.IntStream.rangeClosed(1900, 2030)
-        .boxed()
-        .toList());
+    List<Integer> years = java.util.stream.IntStream.rangeClosed(1900, 2030)
+            .boxed()
+            .toList();
 
-    Set<String> months = Set.of("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+    List<String> months = List.of("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
 
     Set<String> types = Set.of("Income", "Expense");
 
@@ -134,6 +145,121 @@ public class TransactionController
         alert.showAndWait();
     }
 
+    private void fillFormFromSelectedRow() {
+        Transaction selectedTransaction = tblTransactions.getSelectionModel().getSelectedItem();
+
+        if (selectedTransaction == null) {
+            return;
+        }
+
+        txtId.setText(Integer.toString(selectedTransaction.getTransactionId()));
+        dpDate.setValue(selectedTransaction.getDate());
+        cbType.setValue(selectedTransaction.getType());
+        cbCategory.setValue(selectedTransaction.getCategory());
+        txtAmount.setText(String.valueOf(selectedTransaction.getAmount()));
+        txtDescription.setText(selectedTransaction.getDescription());
+    }
+
+    private void loadTransactions() {
+        tblTransactions.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
+        loadCurrentReport();
+    }
+
+    private void loadFilteredTransactions() {
+        String type = cbType.getValue();
+        String category = cbCategory.getValue();
+        int year = cbYear.getValue();
+        Month month = Month.valueOf(cbMonth.getValue().toUpperCase());
+
+        tblTransactions.setItems(FXCollections.observableArrayList(ExpenseTracker.filterTransactions(type, category, year, month)));
+    }
+
+    private void loadTotalExpenses() {
+        tblTotalExpenses.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
+    }
+
+    private void disableTextFields() {
+        txtId.setDisable(true);
+        txtTotalIncome.setEditable(false);
+        txtTotalExpense.setEditable(false);
+        txtCurrentBalance.setEditable(false);
+        txtHighestExpense.setEditable(false);
+    }
+
+    private boolean transactionExists(int id) {
+        return ExpenseTracker.idExists(id);
+    }
+
+    private void setDefaultFilterDropdownValues(){
+        cbType.setValue("Select Type");
+        cbCategory.getItems().addAll("Select a type first.");
+        cbFilterType.setValue("Select a filter type");
+        cbFilterCategory.getItems().addAll("Select a filter type first.");
+        cbMonth.getItems().addAll("Select a year first.");
+    }
+
+    private void initDropDownItems(){
+        cbType.getItems().addAll(types);
+        cbFilterType.getItems().addAll(types);
+        cbYear.getItems().addAll(years);
+
+        cbType.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
+        {
+            cbCategory.getItems().setAll(categoryMap.get(newVal));
+            cbCategory.setValue("");
+        });
+
+        cbFilterType.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
+        {
+            cbFilterCategory.getItems().setAll(categoryMap.get(newVal));
+            cbFilterCategory.setValue("");
+        });
+
+        cbYear.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
+        {
+            cbMonth.getItems().setAll(months);
+            cbMonth.setValue("");
+        });
+
+    }
+
+    private void LoadTransactionsTable(){
+        loadTransactions();
+        colId.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getTransactionId()).asObject());
+
+        colDate.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getDate().toString()));
+
+        colType.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getType()));
+
+        colCategory.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getCategory()));
+
+        colAmount.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleDoubleProperty(data.getValue().getAmount()).asObject());
+
+        colDescription.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
+    }
+
+    private void loadMonthlyReport(){
+        var month = dpMonthSelectorStart.getValue().getMonth();
+        var endMonth = dpMonthSelectorEnd.getValue().getMonth();
+    }
+
+    private void loadCurrentReport(){
+        var totalIncome = ExpenseTracker.getTotalIncome();
+        var totalExpense = ExpenseTracker.getTotalExpense();
+        var currentBalance = ExpenseTracker.getBalance();
+        var highestExpense = ExpenseTracker.getHighestExpenseCategory();
+        txtTotalIncome.setText(String.valueOf(totalIncome));
+        txtTotalExpense.setText(String.valueOf(totalExpense));
+        txtCurrentBalance.setText(String.valueOf(currentBalance));
+        txtHighestExpense.setText(highestExpense);
+    }
+
     @FXML
     void onAddTransactionClick(MouseEvent event) {
         var response = ExpenseTracker.IsValidTransaction(dpDate.getValue(), cbType.getValue(), cbCategory.getValue(), txtAmount.getText());
@@ -143,7 +269,7 @@ public class TransactionController
         }
 
         boolean isSaved = ExpenseTracker.AddTransaction(new Transaction(
-                dpDate.getValue(), cbType.getValue(), cbCategory.getValue(), Float.parseFloat(txtAmount.getText()), txtDescription.getText()));
+                dpDate.getValue(), cbType.getValue(), cbCategory.getValue(), Double.parseDouble(txtAmount.getText()), txtDescription.getText()));
 
         if (!isSaved) {
             showError("Failed to save transaction");
@@ -157,7 +283,7 @@ public class TransactionController
 
     @FXML
     void onApplyFilterClick(MouseEvent event) {
-
+        loadFilteredTransactions();
     }
 
     @FXML
@@ -211,7 +337,7 @@ public class TransactionController
         }
 
         boolean isSaved = ExpenseTracker.UpdateTransaction(new Transaction(
-                id, dpDate.getValue(), cbType.getValue(), cbCategory.getValue(), Float.parseFloat(txtAmount.getText()), txtDescription.getText()));
+                id, dpDate.getValue(), cbType.getValue(), cbCategory.getValue(), Double.parseDouble(txtAmount.getText()), txtDescription.getText()));
 
         if (!isSaved) {
             showError("Failed to update transaction");
@@ -230,65 +356,14 @@ public class TransactionController
         }
     }
 
-    private void fillFormFromSelectedRow() {
-        Transaction selectedTransaction = tblTransactions.getSelectionModel().getSelectedItem();
+    @FXML
+    void onCreateReportClick(MouseEvent event) {
 
-        if (selectedTransaction == null) {
-            return;
-        }
-
-        txtId.setText(Integer.toString(selectedTransaction.getTransactionId()));
-        dpDate.setValue(selectedTransaction.getDate());
-        cbType.setValue(selectedTransaction.getType());
-        cbCategory.setValue(selectedTransaction.getCategory());
-        txtAmount.setText(String.valueOf(selectedTransaction.getAmount()));
-        txtDescription.setText(selectedTransaction.getDescription());
     }
 
-    private void loadTransactions() {
-        tblTransactions.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
-    }
+    @FXML
+    void onResetReportClick(MouseEvent event) {
 
-    private void loadTotalExpenses() {
-        tblTotalExpenses.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
-    }
-
-    private void disableTextFields() {
-        txtId.setDisable(true);
-        txtTotalIncome.setEditable(false);
-        txtTotalExpense.setEditable(false);
-        txtCurrentBalance.setEditable(false);
-        txtHighestExpense.setEditable(false);
-    }
-
-    private boolean transactionExists(int id) {
-        return ExpenseTracker.idExists(id);
-    }
-
-    private void setDefaultFilterDropdownValues(){
-        cbFilterType.setValue("Select a filter type");
-        cbFilterCategory.setValue("Select a filter type first.");
-    }
-
-    private void LoadTransactionsTable(){
-        loadTransactions();
-        colId.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getTransactionId()).asObject());
-
-        colDate.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getDate().toString()));
-
-        colType.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getType()));
-
-        colCategory.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getCategory()));
-
-        colAmount.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleFloatProperty(data.getValue().getAmount()).asObject());
-
-        colDescription.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
     }
 
     @FXML
@@ -296,24 +371,8 @@ public class TransactionController
     {
         LoadTransactionsTable();
         disableTextFields();
-
-        cbType.getItems().addAll(types);
-        cbFilterType.getItems().addAll(types);
-        cbType.setValue("Select Type");
-        cbCategory.setValue("Select a type first.");
         setDefaultFilterDropdownValues();
-
-        cbType.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
-        {
-            cbCategory.getItems().setAll(categoryMap.get(newVal));
-            cbCategory.setValue("");
-        });
-
-        cbFilterType.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
-        {
-            cbFilterCategory.getItems().setAll(categoryMap.get(newVal));
-            cbFilterType.setValue("");
-        });
+        initDropDownItems();
     }
 
 

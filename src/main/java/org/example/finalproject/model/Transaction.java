@@ -8,10 +8,10 @@ public class Transaction
     LocalDate date;
     String type;
     String category;
-    float amount;
+    double amount;
     String description;
 
-    public Transaction(LocalDate date, String type, String category, float amount, String description)
+    public Transaction(LocalDate date, String type, String category, double amount, String description)
     {
         this.date = date;
         this.type = type;
@@ -20,7 +20,7 @@ public class Transaction
         this.description = description;
     }
 
-    public Transaction(int id, LocalDate date, String type, String category, float amount, String description)
+    public Transaction(int id, LocalDate date, String type, String category, double amount, String description)
     {
         this.transactionId = id;
         this.date = date;
@@ -77,12 +77,12 @@ public class Transaction
         this.category = category;
     }
 
-    public float getAmount()
+    public double getAmount()
     {
         return amount;
     }
 
-    public void setAmount(float amount)
+    public void setAmount(double amount)
     {
         this.amount = amount;
     }

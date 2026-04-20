@@ -89,12 +89,15 @@ public class DataManager {
     }
 
     private static Transaction mapRow(ResultSet rs) throws SQLException {
+        double amount = rs.getDouble("amount");
+        amount = Math.round(amount * 100.0) / 100.0;
+
         return new Transaction(
                 rs.getInt("transactionId"),
                 rs.getDate("date").toLocalDate(),
                 rs.getString("type"),
                 rs.getString("category"),
-                rs.getFloat("amount"),
+                rs.getDouble("amount"),
                 rs.getString("description")
         );
     }

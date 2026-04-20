@@ -10,6 +10,10 @@ public class DBConnection {
     private static final String PASSWORD = "0720";
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/javaproject",
+                "root",
+                "Holy3in1$"
+        );
     }
 }

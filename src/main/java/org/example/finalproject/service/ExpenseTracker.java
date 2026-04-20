@@ -53,32 +53,22 @@ public class ExpenseTracker {
 
     // ── Filtering
 
-    public static List<Transaction> filterByType(String type) {
+    public static List<Transaction> filterTransactions(String type, String category, int year, Month month) {
         return getAllTransactions().stream()
-                .filter(t -> t.getType().equalsIgnoreCase(type))
-                .collect(Collectors.toList());
-    }
-
-    public static List<Transaction> filterByCategory(String category) {
-        return getAllTransactions().stream()
-                .filter(t -> t.getCategory().equalsIgnoreCase(category))
-                .collect(Collectors.toList());
-    }
-
-    public static List<Transaction> filterByTypeAndCategory(String type, String category, LocalDate date) {
-        return getAllTransactions().stream()
-                .filter(t -> t.getType().equalsIgnoreCase(type)
-                        && t.getCategory().equalsIgnoreCase(category))
+                .filter(t -> type == null || type.isBlank() || t.getType().equalsIgnoreCase(type))
+                .filter(t -> category == null || category.isBlank() || t.getCategory().equalsIgnoreCase(category))
+                .filter(t -> year == 0 || t.getDate().getYear() == year)
+                .filter(t -> month == null || t.getDate().getMonth() == month)
                 .collect(Collectors.toList());
     }
 
     // ── Category summary (expenses only)
 
-    public static Map<String, Float> getCategorySummary() {
-        Map<String, Float> summary = new LinkedHashMap<>();
+    public static Map<String, Double> getCategorySummary() {
+        Map<String, Double> summary = new LinkedHashMap<>();
         getAllTransactions().stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType()))
-                .forEach(t -> summary.merge(t.getCategory(), t.getAmount(), Float::sum));
+                .forEach(t -> summary.merge(t.getCategory(), t.getAmount(), Double::sum));
         return summary;
     }
 
@@ -136,9 +126,9 @@ public class ExpenseTracker {
             return new ValidationResult(false, "Amount cannot be empty.");
         }
 
-        float amount;
+        double amount;
         try {
-            amount = Float.parseFloat(amountText);
+            amount = Double.parseDouble(amountText);
         } catch (NumberFormatException e) {
             return new ValidationResult(false, "Amount must be numeric.");
         }
