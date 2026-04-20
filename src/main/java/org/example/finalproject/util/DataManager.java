@@ -94,7 +94,7 @@ public class DataManager {
                 rs.getDate("date").toLocalDate(),
                 rs.getString("type"),
                 rs.getString("category"),
-                rs.getFloat("amount"),
+                rs.getDouble("amount"),
                 rs.getString("description")
         );
     }
