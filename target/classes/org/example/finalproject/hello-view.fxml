@@ -17,7 +17,7 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="566.0" prefWidth="887.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.finalproject.TransactionController">
    <children>
-      <TableView fx:id="tblTransactions" layoutX="10.0" layoutY="175.0" prefHeight="216.0" prefWidth="867.0">
+      <TableView fx:id="tblTransactions" layoutX="10.0" layoutY="175.0" onMouseClicked="#onTblTransactionsClick" prefHeight="216.0" prefWidth="867.0">
          <columns>
             <TableColumn fx:id="colId" prefWidth="51.19997978210449" text="ID" />
             <TableColumn fx:id="colDate" prefWidth="180.0" text="Date" />
@@ -43,29 +43,29 @@
                   <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <ChoiceBox fx:id="cbType" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <Label text="ID:" />
-                  <Label text="Date:" GridPane.rowIndex="1" />
-                  <Label text="Type:" GridPane.rowIndex="2" />
-                  <Label text="Category:" GridPane.rowIndex="3" />
-                  <Label text="Amount:" GridPane.rowIndex="4" />
-                  <Label text="Description:" GridPane.rowIndex="5" />
-                  <TextField fx:id="txtId" GridPane.columnIndex="1" />
-                  <TextField fx:id="txtAmount" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                  <TextField fx:id="txtDescription" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                  <DatePicker fx:id="dpDate" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <ChoiceBox fx:id="cbCategory" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <ChoiceBox fx:id="cbType" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label text="Date:" />
+                  <Label text="Type:" GridPane.rowIndex="1" />
+                  <Label text="Category:" GridPane.rowIndex="2" />
+                  <Label text="Amount:" GridPane.rowIndex="3" />
+                  <Label text="Description:" GridPane.rowIndex="4" />
+                  <TextField fx:id="txtAmount" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <TextField fx:id="txtDescription" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <DatePicker fx:id="dpDate" GridPane.columnIndex="1" />
+                  <ChoiceBox fx:id="cbCategory" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label text="Id:" GridPane.rowIndex="5" />
+                  <TextField fx:id="txtId" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                </children>
             </GridPane>
             <VBox alignment="CENTER" prefHeight="129.0" prefWidth="170.0" spacing="5.0">
                <children>
-                  <Button fx:id="btnClear" mnemonicParsing="false" text="Clear Fields" />
-                  <Button fx:id="btnAdd" mnemonicParsing="false" text="Add Transaction" />
-                  <Button fx:id="btnUpdate" mnemonicParsing="false" text="Update Transactions" />
-                  <Button fx:id="btnDelete" mnemonicParsing="false" text="Delete Selected Transaction" />
+                  <Button fx:id="btnClear" mnemonicParsing="false" onMouseClicked="#onClearFieldsClick" text="Clear Fields" />
+                  <Button fx:id="btnAdd" mnemonicParsing="false" onMouseClicked="#onAddTransactionClick" text="Add Transaction" />
+                  <Button fx:id="btnUpdate" mnemonicParsing="false" onMouseClicked="#onUpdateTransactionClick" text="Update Transactions" />
+                  <Button fx:id="btnDelete" mnemonicParsing="false" onMouseClicked="#onDeleteTransactionClick" text="Delete Transaction" />
                </children>
                <opaqueInsets>
                   <Insets top="-0.0" />
@@ -79,7 +79,7 @@
                   <Label text="Filter:" />
                   <ChoiceBox fx:id="cbFilterType" prefWidth="150.0" />
                   <ChoiceBox fx:id="cbFilterCategory" prefWidth="150.0" />
-                  <Button fx:id="btnShowAll" mnemonicParsing="false" text="Show All" />
+                  <Button fx:id="btnShowAll" mnemonicParsing="false" onMouseClicked="#onShowAllClick" text="Show All" />
                </children>
             </VBox>
          </children>

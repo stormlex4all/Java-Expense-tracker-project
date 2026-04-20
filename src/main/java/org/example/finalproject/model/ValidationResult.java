@@ -1,3 +1,3 @@
 package org.example.finalproject.model;
 
-public record ValidationResult(boolean valid, String message) {}
+public record ValidationResult(boolean isValid, String message) {}

@@ -13,59 +13,59 @@ import java.util.stream.Collectors;
 
 public class ExpenseTracker {
 
-    public boolean AddTransaction(Transaction t) {
+    public static boolean AddTransaction(Transaction t) {
         return DataManager.InsertTransaction(t);
     }
 
-    public boolean UpdateTransaction(Transaction t) {
+    public static boolean UpdateTransaction(Transaction t) {
         return DataManager.UpdateTransaction(t);
     }
 
-    public boolean deleteTransaction(int id) {
+    public static boolean deleteTransaction(int id) {
         return DataManager.DeleteTransaction(id);
     }
 
-    public List<Transaction> getAllTransactions() {
+    public static List<Transaction> getAllTransactions() {
         return DataManager.GetAllTransactions();
     }
 
-    public boolean idExists(int id) {
+    public static boolean idExists(int id) {
         return DataManager.IdExists(id);
     }
 
     // Totals
 
-    public double getTotalIncome() {
+    public static double getTotalIncome() {
         return getAllTransactions().stream()
                 .filter(t -> "Income".equalsIgnoreCase(t.getType()))
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public double getTotalExpense() {
+    public static double getTotalExpense() {
         return getAllTransactions().stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType()))
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public double getBalance() {
+    public static double getBalance() {
         return getTotalIncome() - getTotalExpense();
     }
 
     // ── Filtering
 
-    public List<Transaction> filterByType(String type) {
+    public static List<Transaction> filterByType(String type) {
         return getAllTransactions().stream()
                 .filter(t -> t.getType().equalsIgnoreCase(type))
                 .collect(Collectors.toList());
     }
 
-    public List<Transaction> filterByCategory(String category) {
+    public static List<Transaction> filterByCategory(String category) {
         return getAllTransactions().stream()
                 .filter(t -> t.getCategory().equalsIgnoreCase(category))
                 .collect(Collectors.toList());
     }
 
-    public List<Transaction> filterByTypeAndCategory(String type, String category) {
+    public static List<Transaction> filterByTypeAndCategory(String type, String category, LocalDate date) {
         return getAllTransactions().stream()
                 .filter(t -> t.getType().equalsIgnoreCase(type)
                         && t.getCategory().equalsIgnoreCase(category))
@@ -74,7 +74,7 @@ public class ExpenseTracker {
 
     // ── Category summary (expenses only)
 
-    public Map<String, Float> getCategorySummary() {
+    public static Map<String, Float> getCategorySummary() {
         Map<String, Float> summary = new LinkedHashMap<>();
         getAllTransactions().stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType()))
@@ -84,7 +84,7 @@ public class ExpenseTracker {
 
     // ── Monthly summary
 
-    public double getMonthlyIncome(int year, Month month) {
+    public static double getMonthlyIncome(int year, Month month) {
         return getAllTransactions().stream()
                 .filter(t -> "Income".equalsIgnoreCase(t.getType())
                         && t.getDate().getYear() == year
@@ -92,7 +92,7 @@ public class ExpenseTracker {
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public double getMonthlyExpense(int year, Month month) {
+    public static double getMonthlyExpense(int year, Month month) {
         return getAllTransactions().stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType())
                         && t.getDate().getYear() == year
@@ -100,13 +100,13 @@ public class ExpenseTracker {
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public double getMonthlyBalance(int year, Month month) {
+    public static double getMonthlyBalance(int year, Month month) {
         return getMonthlyIncome(year, month) - getMonthlyExpense(year, month);
     }
 
     // ── Highest expense category
 
-    public String getHighestExpenseCategory() {
+    public static String getHighestExpenseCategory() {
         return getCategorySummary().entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -115,7 +115,7 @@ public class ExpenseTracker {
 
     // Validations
 
-    public ValidationResult IsValidTransaction(LocalDate date,
+    public static ValidationResult IsValidTransaction(LocalDate date,
        String type,
        String category,
        String amountText) {
