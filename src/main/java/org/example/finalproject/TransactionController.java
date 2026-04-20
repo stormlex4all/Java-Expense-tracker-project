@@ -1,15 +1,12 @@
 package org.example.finalproject;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import org.example.finalproject.model.Transaction;
 import org.example.finalproject.service.ExpenseTracker;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,12 +33,6 @@ public class TransactionController
     private Button btnUpdate;
 
     @FXML
-    private Button btnCreateReport;
-
-    @FXML
-    private Button btnResetReport;
-
-    @FXML
     private ChoiceBox<String> cbCategory;
 
     @FXML
@@ -52,12 +43,6 @@ public class TransactionController
 
     @FXML
     private ChoiceBox<String> cbType;
-
-    @FXML
-    private ChoiceBox<String> cbMonth;
-
-    @FXML
-    private ChoiceBox<Integer> cbYear;
 
     @FXML
     private TableColumn<Transaction, Double> colAmount;
@@ -119,12 +104,6 @@ public class TransactionController
     @FXML
     private TextField txtTotalIncome;
 
-    List<Integer> years = java.util.stream.IntStream.rangeClosed(1900, 2030)
-            .boxed()
-            .toList();
-
-    List<String> months = List.of("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-
     Set<String> types = Set.of("Income", "Expense");
 
     Set<String> incomeCategories = Set.of("Salary", "Bonus", "Gift", "Other");
@@ -161,21 +140,24 @@ public class TransactionController
     }
 
     private void loadTransactions() {
-        tblTransactions.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
-        loadCurrentReport();
+        var transactions = ExpenseTracker.getAllTransactions();
+        tblTransactions.setItems(FXCollections.observableArrayList(transactions));
+        loadReport(transactions);
+    }
+
+    private void loadExpensesTable(List<Transaction> transactions) {
+        tblTotalExpenses.setItems(FXCollections.observableArrayList(transactions));
     }
 
     private void loadFilteredTransactions() {
-        String type = cbType.getValue();
-        String category = cbCategory.getValue();
-        int year = cbYear.getValue();
-        Month month = Month.valueOf(cbMonth.getValue().toUpperCase());
+        String type = cbFilterType.getValue();
+        String category = cbFilterCategory.getValue();
+        var startDate = dpMonthSelectorStart.getValue();
+        var endDate = dpMonthSelectorEnd.getValue();
 
-        tblTransactions.setItems(FXCollections.observableArrayList(ExpenseTracker.filterTransactions(type, category, year, month)));
-    }
-
-    private void loadTotalExpenses() {
-        tblTotalExpenses.setItems(FXCollections.observableArrayList(ExpenseTracker.getAllTransactions()));
+        var transactions = ExpenseTracker.filterTransactions(type, category, startDate, endDate);
+        tblTransactions.setItems(FXCollections.observableArrayList(transactions));
+        loadReport(transactions);
     }
 
     private void disableTextFields() {
@@ -195,13 +177,13 @@ public class TransactionController
         cbCategory.getItems().addAll("Select a type first.");
         cbFilterType.setValue("Select a filter type");
         cbFilterCategory.getItems().addAll("Select a filter type first.");
-        cbMonth.getItems().addAll("Select a year first.");
+        dpMonthSelectorStart.setValue(null);
+        dpMonthSelectorEnd.setValue(null);
     }
 
     private void initDropDownItems(){
         cbType.getItems().addAll(types);
         cbFilterType.getItems().addAll(types);
-        cbYear.getItems().addAll(years);
 
         cbType.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
         {
@@ -213,12 +195,6 @@ public class TransactionController
         {
             cbFilterCategory.getItems().setAll(categoryMap.get(newVal));
             cbFilterCategory.setValue("");
-        });
-
-        cbYear.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) ->
-        {
-            cbMonth.getItems().setAll(months);
-            cbMonth.setValue("");
         });
 
     }
@@ -244,16 +220,24 @@ public class TransactionController
                 new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
     }
 
-    private void loadMonthlyReport(){
-        var month = dpMonthSelectorStart.getValue().getMonth();
-        var endMonth = dpMonthSelectorEnd.getValue().getMonth();
+    private void LoadExpensesReportTable(){
+        colExpenseCategory.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getCategory()));
+
+        colExpenseAmount.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleDoubleProperty(data.getValue().getAmount()).asObject());
     }
 
-    private void loadCurrentReport(){
-        var totalIncome = ExpenseTracker.getTotalIncome();
-        var totalExpense = ExpenseTracker.getTotalExpense();
-        var currentBalance = ExpenseTracker.getBalance();
-        var highestExpense = ExpenseTracker.getHighestExpenseCategory();
+    private void loadReport(List<Transaction> transactions){
+        var totalIncome = ExpenseTracker.getTotalIncome(transactions);
+        var totalExpense = ExpenseTracker.getTotalExpense(transactions);
+        var currentBalance = ExpenseTracker.getBalance(transactions);
+        var highestExpense = ExpenseTracker.getHighestExpenseCategory(transactions);
+        setReportValues(totalIncome, totalExpense, currentBalance, highestExpense);
+        loadExpensesTable(transactions);
+    }
+
+    private void setReportValues(double totalIncome, double totalExpense, double currentBalance, String highestExpense){
         txtTotalIncome.setText(String.valueOf(totalIncome));
         txtTotalExpense.setText(String.valueOf(totalExpense));
         txtCurrentBalance.setText(String.valueOf(currentBalance));
@@ -357,19 +341,10 @@ public class TransactionController
     }
 
     @FXML
-    void onCreateReportClick(MouseEvent event) {
-
-    }
-
-    @FXML
-    void onResetReportClick(MouseEvent event) {
-
-    }
-
-    @FXML
     public void initialize()
     {
         LoadTransactionsTable();
+        LoadExpensesReportTable();
         disableTextFields();
         setDefaultFilterDropdownValues();
         initDropDownItems();

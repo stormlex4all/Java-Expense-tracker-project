@@ -5,7 +5,6 @@ import org.example.finalproject.model.ValidationResult;
 import org.example.finalproject.util.DataManager;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,71 +32,48 @@ public class ExpenseTracker {
         return DataManager.IdExists(id);
     }
 
-    // Totals
-
-    public static double getTotalIncome() {
-        return getAllTransactions().stream()
+    //Totals Report
+    public static double getTotalIncome(List<Transaction> transactions) {
+        return transactions.stream()
                 .filter(t -> "Income".equalsIgnoreCase(t.getType()))
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public static double getTotalExpense() {
-        return getAllTransactions().stream()
+    public static double getTotalExpense(List<Transaction> transactions) {
+        return transactions.stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType()))
                 .mapToDouble(Transaction::getAmount).sum();
     }
 
-    public static double getBalance() {
-        return getTotalIncome() - getTotalExpense();
+    public static double getBalance(List<Transaction> transactions) {
+        return getTotalIncome(transactions) - getTotalExpense(transactions);
     }
 
     // ── Filtering
 
-    public static List<Transaction> filterTransactions(String type, String category, int year, Month month) {
+    public static List<Transaction> filterTransactions(String type, String category, LocalDate startDate, LocalDate endDate) {
         return getAllTransactions().stream()
-                .filter(t -> type == null || type.isBlank() || t.getType().equalsIgnoreCase(type))
-                .filter(t -> category == null || category.isBlank() || t.getCategory().equalsIgnoreCase(category))
-                .filter(t -> year == 0 || t.getDate().getYear() == year)
-                .filter(t -> month == null || t.getDate().getMonth() == month)
+                .filter(t -> typeIsInvalid(type) || t.getType().equalsIgnoreCase(type))
+                .filter(t -> categoryIsInvalid(category) || t.getCategory().equalsIgnoreCase(category))
+                .filter(t -> startDate == null || !t.getDate().isBefore(startDate))
+                .filter(t -> endDate == null || !t.getDate().isAfter(endDate))
                 .collect(Collectors.toList());
     }
 
-    // ── Category summary (expenses only)
+    // ── Category summary (expenses)
 
-    public static Map<String, Double> getCategorySummary() {
+    public static Map<String, Double> getCategorySummary(List<Transaction> transactions) {
         Map<String, Double> summary = new LinkedHashMap<>();
-        getAllTransactions().stream()
+        transactions.stream()
                 .filter(t -> "Expense".equalsIgnoreCase(t.getType()))
                 .forEach(t -> summary.merge(t.getCategory(), t.getAmount(), Double::sum));
         return summary;
     }
 
-    // ── Monthly summary
-
-    public static double getMonthlyIncome(int year, Month month) {
-        return getAllTransactions().stream()
-                .filter(t -> "Income".equalsIgnoreCase(t.getType())
-                        && t.getDate().getYear() == year
-                        && t.getDate().getMonth() == month)
-                .mapToDouble(Transaction::getAmount).sum();
-    }
-
-    public static double getMonthlyExpense(int year, Month month) {
-        return getAllTransactions().stream()
-                .filter(t -> "Expense".equalsIgnoreCase(t.getType())
-                        && t.getDate().getYear() == year
-                        && t.getDate().getMonth() == month)
-                .mapToDouble(Transaction::getAmount).sum();
-    }
-
-    public static double getMonthlyBalance(int year, Month month) {
-        return getMonthlyIncome(year, month) - getMonthlyExpense(year, month);
-    }
-
     // ── Highest expense category
 
-    public static String getHighestExpenseCategory() {
-        return getCategorySummary().entrySet().stream()
+    public static String getHighestExpenseCategory(List<Transaction> transactions) {
+        return getCategorySummary(transactions).entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse("N/A");
@@ -114,11 +90,11 @@ public class ExpenseTracker {
             return new ValidationResult(false, "Date cannot be empty.");
         }
 
-        if (type == null || type.isBlank() || type.equalsIgnoreCase("Select Type")) {
+        if (typeIsInvalid(type)) {
             return new ValidationResult(false, "Type must be selected.");
         }
 
-        if (category == null || category.isBlank() || category.equalsIgnoreCase("Select Category")) {
+        if (categoryIsInvalid(category)) {
             return new ValidationResult(false, "Category must be selected.");
         }
 
@@ -138,5 +114,13 @@ public class ExpenseTracker {
         }
 
         return new ValidationResult(true, "Valid transaction.");
+    }
+
+    private static boolean typeIsInvalid(String type){
+        return type == null || type.isBlank() || type.startsWith("Select");
+    }
+
+    private static boolean categoryIsInvalid(String category){
+        return category == null || category.isBlank() || category.startsWith("Select");
     }
 }
