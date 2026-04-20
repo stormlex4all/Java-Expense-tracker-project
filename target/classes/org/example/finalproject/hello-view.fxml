@@ -62,10 +62,10 @@
             </GridPane>
             <VBox alignment="CENTER" prefHeight="129.0" prefWidth="170.0" spacing="5.0">
                <children>
-                  <Button fx:id="btnClear" mnemonicParsing="false" onMouseClicked="#onClearFieldsClick" text="Clear Fields" />
-                  <Button fx:id="btnAdd" mnemonicParsing="false" onMouseClicked="#onAddTransactionClick" text="Add Transaction" />
+                  <Button fx:id="btnClear" mnemonicParsing="false" onMouseClicked="#onClearFieldsClick" prefHeight="26.0" prefWidth="128.0" text="Clear Fields" />
+                  <Button fx:id="btnAdd" mnemonicParsing="false" onMouseClicked="#onAddTransactionClick" prefHeight="26.0" prefWidth="129.0" text="Add Transaction" />
                   <Button fx:id="btnUpdate" mnemonicParsing="false" onMouseClicked="#onUpdateTransactionClick" text="Update Transactions" />
-                  <Button fx:id="btnDelete" mnemonicParsing="false" onMouseClicked="#onDeleteTransactionClick" text="Delete Transaction" />
+                  <Button fx:id="btnDelete" mnemonicParsing="false" onMouseClicked="#onDeleteTransactionClick" prefHeight="26.0" prefWidth="131.0" text="Delete Transaction" />
                </children>
                <opaqueInsets>
                   <Insets top="-0.0" />
@@ -77,9 +77,31 @@
                </opaqueInsets>
                <children>
                   <Label text="Filter:" />
-                  <ChoiceBox fx:id="cbFilterType" prefWidth="150.0" />
-                  <ChoiceBox fx:id="cbFilterCategory" prefWidth="150.0" />
-                  <Button fx:id="btnShowAll" mnemonicParsing="false" onMouseClicked="#onShowAllClick" text="Show All" />
+                  <HBox alignment="CENTER" prefHeight="36.0" prefWidth="170.0" spacing="22.0">
+                     <children>
+                        <Label text="Type:" />
+                        <ChoiceBox fx:id="cbFilterType" prefHeight="26.0" prefWidth="104.0" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="9.0" prefWidth="170.0" spacing="3.0">
+                     <children>
+                        <Label text="Category:" />
+                        <ChoiceBox fx:id="cbFilterCategory" prefHeight="26.0" prefWidth="100.0" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                     <children>
+                        <Label text="Date" />
+                        <ChoiceBox fx:id="cbYear" prefHeight="26.0" prefWidth="57.0" />
+                        <ChoiceBox fx:id="cbMonth" prefHeight="26.0" prefWidth="57.0" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="15.0" prefWidth="170.0" spacing="17.0">
+                     <children>
+                        <Button fx:id="btnApplyFilter" mnemonicParsing="false" onMouseClicked="#onApplyFilterClick" prefHeight="25.0" prefWidth="68.0" text="Filter" />
+                        <Button fx:id="btnResetFilter" mnemonicParsing="false" onMouseClicked="#onResetFilterClick" prefHeight="28.0" prefWidth="65.0" text="Reset" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>
