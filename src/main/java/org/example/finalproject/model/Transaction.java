@@ -11,18 +11,20 @@ public class Transaction
     float amount;
     String description;
 
-    public Transaction(int transactionId, LocalDate date, String type, String category, float amount, String description)
+    public Transaction(LocalDate date, String type, String category, float amount, String description)
     {
-        if(type.equalsIgnoreCase("income") || type.equalsIgnoreCase("expense"))
-        {
-            this.type = type;
-        }
-        else
-        {
-            this.type = "Income";
-        }
-        this.transactionId = transactionId;
         this.date = date;
+        this.type = type;
+        this.category = category;
+        this.amount = amount;
+        this.description = description;
+    }
+
+    public Transaction(int id, LocalDate date, String type, String category, float amount, String description)
+    {
+        this.transactionId = id;
+        this.date = date;
+        this.type = type;
         this.category = category;
         this.amount = amount;
         this.description = description;

@@ -1,90 +1,101 @@
 package org.example.finalproject.util;
 
-import org.example.finalproject.util.DBConnection;
+import org.example.finalproject.model.Transaction;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
 
 public class DataManager {
     // Create (Insert)
-    public static void addTransactions(LocalDate date, String type, String category, double amount, String description) {
-        String sql = "INSERT INTO transactions (transaction_date, type, category, amount, description) VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDate(1, Date.valueOf(date));
-            stmt.setString(2, type);
-            stmt.setString(3, category);
-            stmt.setDouble(4, amount);
-            stmt.setString(5, description);
-            stmt.executeUpdate();
-
-            System.out.println("Transaction added!");
+    public static boolean InsertTransaction(Transaction t) {
+        String sql = "INSERT INTO transactions(date, type, category, amount, description) VALUES (?, ?, ?, ?, ?)";
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(t.getDate()));
+            ps.setString(2, t.getType());
+            ps.setString(3, t.getCategory());
+            ps.setDouble(4, t.getAmount());
+            ps.setString(5, t.getDescription());
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Insert failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean UpdateTransaction(Transaction t) {
+        String sql =
+                "UPDATE transactions " +
+                        "SET date =?, type =?, category =?, amount =?, description =? " +
+                        "WHERE transactionId =?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(t.getDate()));
+            ps.setString(2, t.getType());
+            ps.setString(3, t.getCategory());
+            ps.setDouble(4, t.getAmount());
+            ps.setString(5, t.getDescription());
+            ps.setInt(6, t.getTransactionId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Update failed: " + e.getMessage());
+            return false;
         }
     }
 
     //READ (Select)
-    public static List<String> getTransactions() {
-        List<String> list = new ArrayList<>();
-        String sql = "SELECT * FROM transactions";
+    public static List<Transaction> GetAllTransactions() {
+        List<Transaction> list = new ArrayList<>();
+        String sql = "SELECT * FROM transactions ORDER BY date DESC";
 
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery(sql)) {
             while (rs.next()) {
-                String record = rs.getInt("transaction_id") + " - " +
-                        rs.getDate("transaction_date") + " - " +
-                        rs.getString("type") + " - " +
-                        rs.getString("category") + " - " +
-                        rs.getDouble("amount") + " - " +
-                        rs.getString("description");
-                list.add(record);
+                list.add(mapRow(rs));
             }
+            return list;
         } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    // UPDATE
-    public static void updateTransactions(int id, LocalDate date, String type, String category, double amount, String description) {
-        String sql = "UPDATE transactions SET transaction_date=?, type=?, category=?, amount=?, description=? WHERE transaction_id=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setDate(1, Date.valueOf(date));
-            stmt.setString(2, type);
-            stmt.setString(3, category);
-            stmt.setDouble(4, amount);
-            stmt.setString(5, description);
-            stmt.setInt(6, id);
-
-            stmt.executeUpdate();
-            System.out.println("Transaction updated!");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
     //DELETE
-    public static void deleteTransactions(int id) {
-        String sql = "DELETE FROM transactions WHERE transaction_id=?";
+    public static boolean DeleteTransaction(int id) {
+        String sql = "DELETE FROM transactions WHERE transactionId =?";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-
-            System.out.println("Transaction deleted!");
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Delete failed: " + e.getMessage());
+            return false;
         }
+    }
+
+    public static boolean IdExists(int id) {
+        String sql = "SELECT 1 FROM transactions WHERE transactionId =?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeQuery().next();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private static Transaction mapRow(ResultSet rs) throws SQLException {
+        return new Transaction(
+                rs.getInt("transactionId"),
+                rs.getDate("date").toLocalDate(),
+                rs.getString("type"),
+                rs.getString("category"),
+                rs.getFloat("amount"),
+                rs.getString("description")
+        );
     }
 }
